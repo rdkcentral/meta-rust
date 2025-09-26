@@ -59,11 +59,7 @@ def rust_base_triple(d, thing):
     Note that os is assumed to be some linux form
     '''
 
-    # The llvm-target for armv7 is armv7-unknown-linux-gnueabihf
-    if thing == "TARGET" and target_is_armv7(d):
-        arch = "armv7"
-    else:
-        arch = d.getVar('{}_ARCH'.format(thing))
+    arch = d.getVar('{}_ARCH'.format(thing))
 
     # All the Yocto targets are Linux and are 'unknown'
     vendor = "-unknown"
@@ -121,6 +117,7 @@ def arch_to_rust_arch(arch):
 
 RUST_BUILD_SYS = "${@rust_base_triple(d, 'BUILD')}"
 RUST_HOST_SYS = "${@rust_base_triple(d, 'HOST')}"
+RUST_HOST_SYS:class-native = "${HOST_SYS}"
 RUST_TARGET_SYS = "${@rust_base_triple(d, 'TARGET')}"
 
 # wrappers to get around the fact that Rust needs a single
