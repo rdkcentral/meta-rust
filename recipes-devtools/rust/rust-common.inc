@@ -139,7 +139,9 @@ MAX_ATOMIC_WIDTH[armv7-eabi] = "64"
 FEATURES[armv7-eabi] = "+v7,+vfp2,+thumb2"
 
 ## aarch64-unknown-linux-{gnu, musl}
-DATA_LAYOUT[aarch64] = "e-m:e-i8:8:32-i16:16:32-i64:64-i128:128-n32:64-S128"
+DATA_LAYOUT[aarch64] = "e-m:e"
+DATA_LAYOUT[aarch64] .= "${@'' if bb.utils.vercmp_string_op(d.getVar('PV', True), '1.87.0', '<') else '-p270:32:32-p271:32:32-p272:64:64'}"
+DATA_LAYOUT[aarch64] .= "-i8:8:32-i16:16:32-i64:64-i128:128-n32:64-S128"
 DATA_LAYOUT[aarch64] .= "${@'' if bb.utils.vercmp_string_op(d.getVar('PV', True), '1.80.0', '<') else '-Fn32'}"
 LLVM_TARGET[aarch64] = "${RUST_TARGET_SYS}"
 TARGET_ENDIAN[aarch64] = "little"
@@ -339,8 +341,14 @@ def rust_gen_target(d, thing, wd, features, cpu, arch, abi=""):
     tspec['llvm-target'] = d.getVarFlag('LLVM_TARGET', arch_abi)
     tspec['data-layout'] = d.getVarFlag('DATA_LAYOUT', arch_abi)
     tspec['max-atomic-width'] = int(d.getVarFlag('MAX_ATOMIC_WIDTH', arch_abi))
-    tspec['target-pointer-width'] = d.getVarFlag('TARGET_POINTER_WIDTH', arch_abi)
-    tspec['target-c-int-width'] = d.getVarFlag('TARGET_C_INT_WIDTH', arch_abi)
+    if bb.utils.vercmp_string_op(d.getVar('PV', True), '1.91.0', '<'):
+        tspec['target-pointer-width'] = d.getVarFlag('TARGET_POINTER_WIDTH', arch_abi)
+    else:
+        tspec['target-pointer-width'] = int(d.getVarFlag('TARGET_POINTER_WIDTH', arch_abi))
+    if bb.utils.vercmp_string_op(d.getVar('PV', True), '1.90.0', '<'):
+        tspec['target-c-int-width'] = d.getVarFlag('TARGET_C_INT_WIDTH', arch_abi)
+    else:
+        tspec['target-c-int-width'] = int(d.getVarFlag('TARGET_C_INT_WIDTH', arch_abi))
     tspec['target-endian'] = d.getVarFlag('TARGET_ENDIAN', arch_abi)
     tspec['arch'] = arch_to_rust_target_arch(arch)
     tspec['os'] = "linux"
@@ -368,7 +376,6 @@ def rust_gen_target(d, thing, wd, features, cpu, arch, abi=""):
     tspec['linker-is-gnu'] = True
     tspec['linker-flavor'] = "gcc"
     tspec['has-rpath'] = True
-    tspec['has-elf-tls'] = True
     tspec['position-independent-executables'] = True
     tspec['panic-strategy'] = d.getVar("RUST_PANIC_STRATEGY")
 
