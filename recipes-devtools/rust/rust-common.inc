@@ -376,6 +376,8 @@ def rust_gen_target(d, thing, wd, features, cpu, arch, abi=""):
     tspec['linker-is-gnu'] = True
     tspec['linker-flavor'] = "gcc"
     tspec['has-rpath'] = True
+    if bb.utils.vercmp_string_op(d.getVar('PV', True), "1.86.0", "<="):
+       tspec['has-elf-tls'] = True
     tspec['position-independent-executables'] = True
     tspec['panic-strategy'] = d.getVar("RUST_PANIC_STRATEGY")
 
