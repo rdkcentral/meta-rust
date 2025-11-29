@@ -150,7 +150,7 @@ TARGET_C_INT_WIDTH[aarch64] = "32"
 MAX_ATOMIC_WIDTH[aarch64] = "128"
 
 ## x86_64-unknown-linux-{gnu, musl}
-DATA_LAYOUT[x86_64] = "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-i128:128-f80:128-n8:16:32:64-S128"
+DATA_LAYOUT[x86_64] = "${@'e-m:e-i64:64-f80:128-n8:16:32:64-S128' if bb.utils.vercmp_string_op(d.getVar('PV', True), '1.75.0', '<=') else 'e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-i128:128-f80:128-n8:16:32:64-S128'}"
 LLVM_TARGET[x86_64] = "${RUST_TARGET_SYS}"
 TARGET_ENDIAN[x86_64] = "little"
 TARGET_POINTER_WIDTH[x86_64] = "64"
@@ -376,6 +376,8 @@ def rust_gen_target(d, thing, wd, features, cpu, arch, abi=""):
     tspec['linker-is-gnu'] = True
     tspec['linker-flavor'] = "gcc"
     tspec['has-rpath'] = True
+    if bb.utils.vercmp_string_op(d.getVar('PV', True), "1.86.0", "<="):
+       tspec['has-elf-tls'] = True
     tspec['position-independent-executables'] = True
     tspec['panic-strategy'] = d.getVar("RUST_PANIC_STRATEGY")
 
